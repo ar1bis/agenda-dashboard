@@ -1,7 +1,8 @@
-﻿using System.Windows;
+﻿using System.Diagnostics;
+using System.Windows;
 using System.Windows.Threading;
 
-namespace AgendaDashboard.Managers;
+namespace AgendaDashboard.Utilities;
 
 public class NotifMgr
 {
@@ -25,7 +26,25 @@ public class NotifMgr
         _statusBarEmpty = true;
     }
 
-    public void QueueMessage(string message, string status)
+    internal async Task ExecNotifyAsync(Func<Task> asyncFunc, string successMessage)
+    {
+        try
+        {
+            await asyncFunc();
+        }
+        catch (Exception ex)
+        {
+            // Show an error message if loading fails
+            QueueMessage($"{asyncFunc.Method.Name}(): {ex.Message}", "Error");
+            Trace.WriteLine($"{asyncFunc.Method.Name}(): {ex.Message}");
+            return;
+        }
+
+        // Successful, show success message
+        QueueMessage(successMessage, "Success");
+    }
+
+    private void QueueMessage(string message, string status)
     {
         _msgQueue.Enqueue((message, status));
 

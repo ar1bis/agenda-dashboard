@@ -23,6 +23,8 @@ public class CalendarViewModel : INotifyPropertyChanged
 {
     public List<GcalEvent> GcalEvents { get; set; } = [];
     public List<string> DateLines { get; set; } = [];
+
+    private NotifMgr _notifMgr;
     private DateTime _targetDate = DateTime.Now.Date;
     private IEnumerable<string?> _selectedIds = [];
     private CalendarService _serviceGcal = new();
@@ -59,16 +61,18 @@ public class CalendarViewModel : INotifyPropertyChanged
 
     private void RefreshGcal()
     {
-        _ = Functions.NotifExAsync(LoadGcalEventsAsync, "Loaded Google Calendar events.");
+        _ = _notifMgr.ExecNotifyAsync(LoadGcalEventsAsync, "Loaded Google Calendar events.");
     }
 
     private void RefreshCardDav()
     {
-        _ = Functions.NotifExAsync(LoadCardDavEventsAsync, "Loaded Google Calendar events.");
+        _ = _notifMgr.ExecNotifyAsync(LoadCardDavEventsAsync, "Loaded Google Calendar events.");
     }
 
     private async Task StartupAsync()
     {
+        _notifMgr = App.Current.NotifMgr;
+
         // Get CardDAV settings from ConfigMgr
         var configCardDav = App.Current.ConfigMgr.Config["carddav"];
         var refreshIntervalCardDav =

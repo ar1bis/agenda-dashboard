@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
-using AgendaDashboard.Managers;
 using AgendaDashboard.Utilities;
 
 namespace AgendaDashboard;
@@ -20,21 +19,21 @@ public partial class App : Application
         base.OnStartup(e);
 
         // Set up logging
-        #if DEBUG
+#if DEBUG
         Trace.Listeners.Add(new TimestampConsoleTraceListener(true));
-        #else
+#else
         Trace.Listeners.Add(new TimestampTextWriterTraceListener($"log_{DateTime.Now:yyyyMMdd}.txt"));
-        #endif
+#endif
         Trace.AutoFlush = true;
 
         // Create the main window, config and notification managers
         var mainWindow = new MainWindow();
         NotifMgr = new NotifMgr(mainWindow.ShowNotification);
-        mainWindow.Loaded += SetUpGlobalKeybind;
+        mainWindow.Loaded += MainWindow_Loaded;
         mainWindow.Show();
     }
 
-    private static void SetUpGlobalKeybind(object sender, RoutedEventArgs routedEventArgs)
+    private static void MainWindow_Loaded(object sender, RoutedEventArgs routedEventArgs)
     {
         var mainWindow = (sender as MainWindow)!;
         // Set ctrl+win+# as a global keybind that temporarily raises mainWindow to the top of the z-order

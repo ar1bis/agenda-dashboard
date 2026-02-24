@@ -10,64 +10,60 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CardDav" Version="1.0.0" />
-      <PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
-      <PackageReference Include="Google.Apis.Calendar.v3" Version="1.69.0.3746" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.5.25277.114" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.5.25277.114" />
-      <PackageReference Include="vCard.Net" Version="2.1.0" />
-      <PackageReference Include="YamlDotNet" Version="16.3.0" />
+        <PackageReference Include="CardDav" Version="1.0.0"/>
+        <PackageReference Include="Google.Apis.Auth" Version="1.69.0"/>
+        <PackageReference Include="Google.Apis.Calendar.v3" Version="1.69.0.3746"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.5.25277.114"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.5.25277.114"/>
+        <PackageReference Include="vCard.Net" Version="2.1.0"/>
+        <PackageReference Include="YamlDotNet" Version="16.3.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="credentials_gcal.json" />
-      <Content Include="credentials_gcal.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-      <None Remove="credentials_todoist.json" />
-      <Content Include="credentials_todoist.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-        <None Remove="credentials_carddav.json" />
+        <Content Include="credentials_gcal.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="credentials_todoist.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
         <Content Include="credentials_carddav.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-      <None Remove="settings.yaml" />
-      <Content Include="settings.yaml">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
+        <Content Include="configuration.yaml">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>
-      <Page Update="Views\CalendarView.xaml">
-        <Generator>MSBuild:Compile</Generator>
-        <XamlRuntime>Wpf</XamlRuntime>
-        <SubType>Designer</SubType>
-      </Page>
-      <Page Update="Views\TodoistView.xaml">
-        <Generator>MSBuild:Compile</Generator>
-        <XamlRuntime>Wpf</XamlRuntime>
-        <SubType>Designer</SubType>
-      </Page>
-      <Page Update="Views\TodoistForm.xaml">
-        <Generator>MSBuild:Compile</Generator>
-        <XamlRuntime>Wpf</XamlRuntime>
-        <SubType>Designer</SubType>
-      </Page>
-      <Page Update="Views\GcalForm.xaml">
-        <Generator>MSBuild:Compile</Generator>
-        <XamlRuntime>Wpf</XamlRuntime>
-        <SubType>Designer</SubType>
-      </Page>
-      <Page Update="Controls\TitleBar.xaml">
-        <Generator>MSBuild:Compile</Generator>
-        <XamlRuntime>Wpf</XamlRuntime>
-        <SubType>Designer</SubType>
-      </Page>
+        <Page Update="Views\CalendarView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <XamlRuntime>Wpf</XamlRuntime>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Views\TodoistView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <XamlRuntime>Wpf</XamlRuntime>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Views\TodoistForm.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <XamlRuntime>Wpf</XamlRuntime>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Views\GcalForm.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <XamlRuntime>Wpf</XamlRuntime>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Controls\TitleBar.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <XamlRuntime>Wpf</XamlRuntime>
+            <SubType>Designer</SubType>
+        </Page>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Assets\" />
+        <Folder Include="Assets\"/>
     </ItemGroup>
 
 </Project>

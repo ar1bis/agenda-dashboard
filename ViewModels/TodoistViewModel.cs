@@ -12,6 +12,8 @@ namespace AgendaDashboard.ViewModels;
 public class TodoistViewModel : INotifyPropertyChanged
 {
     public List<TodoistTask> TodoistTasks { get; private set; } = [];
+
+    private NotifMgr _notifMgr;
     private HttpClient _client = new();
     private string _query = "";
 
@@ -22,11 +24,13 @@ public class TodoistViewModel : INotifyPropertyChanged
 
     internal void Refresh()
     {
-        _ = Functions.NotifExAsync(LoadTodoistTasksAsync, "Loaded Todoist tasks.");
+        _ = _notifMgr.ExecNotifyAsync(LoadTodoistTasksAsync, "Loaded Todoist tasks.");
     }
 
     private void Startup()
     {
+        _notifMgr = App.Current.NotifMgr;
+
         // Get settings from ConfigMgr TODO: error handling
         var config = App.Current.ConfigMgr.Config["todoist"];
         var refreshInterval = double.Parse((config["refresh interval"] as YamlScalarNode)!.Value!);

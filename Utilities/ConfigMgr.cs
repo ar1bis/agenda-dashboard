@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using YamlDotNet.RepresentationModel;
 
-namespace AgendaDashboard.Managers;
+namespace AgendaDashboard.Utilities;
 
 public class ConfigMgr
 {
@@ -9,7 +9,7 @@ public class ConfigMgr
 
     public ConfigMgr()
     {
-        var yaml = File.ReadAllText("settings.yaml");
+        var yaml = File.ReadAllText("configuration.yaml");
         var stream = new YamlStream();
         stream.Load(new StringReader(yaml));
 
