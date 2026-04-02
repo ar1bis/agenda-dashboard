@@ -1,0 +1,19 @@
+﻿general:
+  x_position: 20
+  y_position: 20
+
+todoist:
+  refresh_interval: 300
+  query: today
+
+google_calendar:
+  refresh_interval: 600
+  selected_ids:
+    - 67f247a1bc3c575043d150414ad44919d993863b8ecbe0761f47fe01062c94bf@group.calendar.google.com
+    - 1f47fe067f247a414ad44919e076d993863b8ecb1bc3c575043d1501062c94bf@group.calendar.google.com
+    - d25f74c6115a7fc0f4cd5334aa9ffef2ca2d2f5f9b8a04a49ccc7c328b84d2c5@group.calendar.google.com
+    - 869c6ce88ebb74ee945c52358b657d3f1a7f8d3ed52f758b89f0b45e0c007da7@group.calendar.google.com
+
+carddav:
+  refresh_interval: 900
+  url: https://carddav.fastmail.com/dav/addressbooks/user/testuser@fastmail.com/Default
