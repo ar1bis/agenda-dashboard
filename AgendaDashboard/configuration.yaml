@@ -1,19 +1,19 @@
 ﻿general:
-  x position: 20
-  y position: 20
+  x_position: 20
+  y_position: 20
 
 todoist:
-  refresh interval: 300
+  refresh_interval: 300
   query: today
 
-google calendar:
-  refresh interval: 600
-  selected ids:
+google_calendar:
+  refresh_interval: 600
+  selected_ids:
     - armnrd@gmail.com # Main
     - 414ad44919e0761f47fe067f247ad993863b8ecb1bc3c575043d1501062c94bf@group.calendar.google.com # Todoist
     - d25ff2ca2d2d5334aa9ffe8bf9b8af57c3274c6115a7fc0f4c04a49ccc84d2c5@group.calendar.google.com # Recreation
     - d52f758b89f0b869c6ce88ebb74ee9445e05c57d3f1a7f8d3ec007da2358b657@group.calendar.google.com # (Classes)
 
 carddav:
-  refresh interval: 900
+  refresh_interval: 900
   url: https://carddav.fastmail.com/dav/addressbooks/user/androkot@fastmail.com/Default

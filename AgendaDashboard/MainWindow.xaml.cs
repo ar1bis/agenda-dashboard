@@ -2,7 +2,6 @@
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
-using YamlDotNet.RepresentationModel;
 
 namespace AgendaDashboard;
 
@@ -24,10 +23,9 @@ public partial class MainWindow : Window
         base.OnSourceInitialized(e);
 
         // Set the initial window position from settings TODO: error handling
-        var config = App.Current.ConfigMgr.Config;
-        Left = double.Parse(((YamlScalarNode)config["general"]["x position"]).Value!) -
-               4; // Offset by 4px because of the title bar
-        Top = double.Parse(((YamlScalarNode)config["general"]["y position"]).Value!) - 4; // Same here
+        var config = App.Current.Config;
+        Left = config.General.XPosition - 4; // Offset by 4px because of the title bar
+        Top = config.General.YPosition - 4; // Same here
 
         var hwnd = new WindowInteropHelper(this).Handle;
 

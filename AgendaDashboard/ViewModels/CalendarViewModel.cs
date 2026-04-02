@@ -15,7 +15,6 @@ using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using vCard.Net.CardComponents;
 using vCard.Net.Serialization;
-using YamlDotNet.RepresentationModel;
 
 namespace AgendaDashboard.ViewModels;
 
@@ -26,7 +25,7 @@ public class CalendarViewModel : INotifyPropertyChanged
 
     private NotifMgr _notifMgr;
     private DateTime _targetDate = DateTime.Now.Date;
-    private IEnumerable<string?> _selectedIds = [];
+    private List<string> _selectedIds = [];
     private CalendarService _serviceGcal = new();
     private HttpClient _clientCardDav = new();
     private string _urlCardDav = "";
@@ -73,44 +72,36 @@ public class CalendarViewModel : INotifyPropertyChanged
     {
         _notifMgr = App.Current.NotifMgr;
 
-        // Get CardDAV settings from ConfigMgr
-        var configCardDav = App.Current.ConfigMgr.Config["carddav"];
-        var refreshIntervalCardDav =
-            double.Parse((configCardDav["refresh interval"] as YamlScalarNode)!.Value!); // TODO: error handling
-        _urlCardDav = ((YamlScalarNode)configCardDav["url"]).Value!;
+        var configCardDav = App.Current.Config.Carddav;
+        var refreshIntervalCardDav = configCardDav.RefreshInterval; // TODO: error handling
+        _urlCardDav = configCardDav.Url;
 
         // Set up CardDAV client
-        var credentials = JsonDocument.Parse(await File.ReadAllTextAsync("credentials_carddav.json"));
-        var usernameCardDav = credentials.RootElement.GetProperty("username").GetString();
-        var passwordCardDav = credentials.RootElement.GetProperty("password").GetString();
+        var usernameCardDav = App.Current.Creds.Carddav.Username;
+        var passwordCardDav = App.Current.Creds.Carddav.Password;
         _clientCardDav = new HttpClient();
         var byteArray = Encoding.ASCII.GetBytes($"{usernameCardDav}:{passwordCardDav}");
         _clientCardDav.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
 
-        // Get Google Calendar settings from ConfigMgr
-        var configGcal = App.Current.ConfigMgr.Config["google calendar"];
-        var refreshIntervalGCal =
-            double.Parse((configGcal["refresh interval"] as YamlScalarNode)!.Value!); // TODO: error handling
-        _selectedIds = ((YamlSequenceNode)configGcal["selected ids"]).Children
-            .OfType<YamlScalarNode>()
-            .Select(node => node.Value);
+        var configGcal = App.Current.Config.GoogleCalendar;
+        var refreshIntervalGCal = configGcal.RefreshInterval;
+        _selectedIds = configGcal.SelectedIds;
 
         // Set up Google Calendar API service
         string[] scopes = [CalendarService.Scope.CalendarReadonly];
         const string applicationName = "Agenda Dashboard";
         UserCredential credential;
 
-        // ReSharper disable once UseAwaitUsing - really small file
-        using (var stream = new FileStream("credentials_gcal.json", FileMode.Open, FileAccess.Read))
-        {
-            credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                (await GoogleClientSecrets.FromStreamAsync(stream)).Secrets,
-                scopes,
-                "user",
-                CancellationToken.None,
-                new FileDataStore("gcal_token", true));
-        }
+        var stream = new MemoryStream();
+        JsonSerializer.Serialize(stream, App.Current.Creds.GoogleCalendar);
+        stream.Position = 0;
+        credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+            GoogleClientSecrets.FromStream(stream).Secrets,
+            scopes,
+            "user",
+            CancellationToken.None,
+            new FileDataStore("gcal_token", true));
 
         _serviceGcal = new CalendarService(new BaseClientService.Initializer
         {

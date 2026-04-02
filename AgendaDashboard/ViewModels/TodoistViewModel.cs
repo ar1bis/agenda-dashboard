@@ -5,7 +5,6 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Windows.Threading;
 using AgendaDashboard.Utilities;
-using YamlDotNet.RepresentationModel;
 
 namespace AgendaDashboard.ViewModels;
 
@@ -31,14 +30,12 @@ public class TodoistViewModel : INotifyPropertyChanged
     {
         _notifMgr = App.Current.NotifMgr;
 
-        // Get settings from ConfigMgr TODO: error handling
-        var config = App.Current.ConfigMgr.Config["todoist"];
-        var refreshInterval = double.Parse((config["refresh interval"] as YamlScalarNode)!.Value!);
-        _query = (config["query"] as YamlScalarNode)!.Value!;
+        var config = App.Current.Config.Todoist;
+        var refreshInterval = config.RefreshInterval;
+        _query = config.Query;
 
         // Set up client
-        var credentials = JsonDocument.Parse(File.ReadAllText("credentials_todoist.json"));
-        var apiToken = credentials.RootElement.GetProperty("api-token").GetString();
+        var apiToken = App.Current.Creds.Todoist.ApiToken;
         _client = new HttpClient();
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiToken);
 
