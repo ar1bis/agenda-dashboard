@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgendaDashboard", "AgendaDashboard.csproj", "{AA86CF77-5E26-444C-8022-D512D9180123}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgendaDashboard", "AgendaDashboard\AgendaDashboard.csproj", "{AA86CF77-5E26-444C-8022-D512D9180123}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgendaDashboard.Tests", "AgendaDashboard.Tests\AgendaDashboard.Tests.csproj", "{3DEBA2A5-FB2E-4B51-AC6E-483DC7A017C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,5 +14,9 @@ Global
 		{AA86CF77-5E26-444C-8022-D512D9180123}.Release|x64.Build.0 = Release|x64
 		{AA86CF77-5E26-444C-8022-D512D9180123}.Debug|x64.ActiveCfg = Debug|x64
 		{AA86CF77-5E26-444C-8022-D512D9180123}.Debug|x64.Build.0 = Debug|x64
+		{3DEBA2A5-FB2E-4B51-AC6E-483DC7A017C4}.Release|x64.ActiveCfg = Release|Any CPU
+		{3DEBA2A5-FB2E-4B51-AC6E-483DC7A017C4}.Release|x64.Build.0 = Release|Any CPU
+		{3DEBA2A5-FB2E-4B51-AC6E-483DC7A017C4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3DEBA2A5-FB2E-4B51-AC6E-483DC7A017C4}.Debug|x64.Build.0 = Debug|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -5,6 +5,4 @@ obj/
 riderModule.iml
 /AgendaDashboard.sln.DotSettings.user
 /DRAFT_README.md
-/credentials_todoist.json
-/credentials_gcal.json
-/credentials_carddav.json
+credentials.yaml
