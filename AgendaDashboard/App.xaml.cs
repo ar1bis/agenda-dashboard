@@ -10,9 +10,9 @@ namespace AgendaDashboard;
 /// </summary>
 public partial class App : Application
 {
-    public NotifMgr? NotifMgr { get; private set; }
-    public Configuration Config = DataStore.LoadConfiguration();
-    public Credentials Creds = DataStore.LoadCredentials();
+    public readonly Configuration Configuration = DataStore.LoadConfiguration();
+    public readonly Credentials Credentials = DataStore.LoadCredentials();
+    public new MainWindow MainWindow = null!; // Suppress warning - variable set correctly before being used
     public new static App Current => (Application.Current as App)!;
 
     protected override void OnStartup(StartupEventArgs e)
@@ -27,22 +27,20 @@ public partial class App : Application
 #endif
         Trace.AutoFlush = true;
 
-        // Create the main window, config and notification managers
-        var mainWindow = new MainWindow();
-        NotifMgr = new NotifMgr(mainWindow.ShowNotification);
-        mainWindow.Loaded += MainWindow_Loaded;
-        mainWindow.Show();
+        // Create and show main window
+        base.MainWindow = MainWindow = new MainWindow();
+        MainWindow.Loaded += MainWindow_Loaded;
+        MainWindow.Show();
     }
 
     private static void MainWindow_Loaded(object sender, RoutedEventArgs routedEventArgs)
     {
-        var mainWindow = (sender as MainWindow)!;
         // Set ctrl+win+# as a global keybind that temporarily raises mainWindow to the top of the z-order
         var raiseKeybind = new GlobalKeybind(
-            mainWindow,
+            Current.MainWindow,
             Key.OemQuestion,
             ModifierKeys.Control | ModifierKeys.Windows,
             10000);
-        raiseKeybind.Pressed += mainWindow.ToggleRaise;
+        raiseKeybind.Pressed += Current.MainWindow.ToggleRaise;
     }
 }

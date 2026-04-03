@@ -42,9 +42,8 @@ public partial class TitleBar : UserControl
 
     private void RefreshMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        var mainWindow = (Window.GetWindow(this) as MainWindow)!;
-        mainWindow.CalendarView.RefreshButton_Click(this, null);
-        mainWindow.TodoistView.RefreshButton_Click(this, null);
+        App.Current.MainWindow.CalendarView.RefreshButton_Click(this, null);
+        App.Current.MainWindow.TodoistView.RefreshButton_Click(this, null);
     }
 
     private void LockMenuItem_Checked(object sender, RoutedEventArgs e)
