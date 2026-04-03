@@ -23,7 +23,6 @@ public class CalendarViewModel : INotifyPropertyChanged
     public List<GcalEvent> GcalEvents { get; set; } = [];
     public List<string> DateLines { get; set; } = [];
 
-    private NotifMgr _notifMgr;
     private DateTime _targetDate = DateTime.Now.Date;
     private List<string> _selectedIds = [];
     private CalendarService _serviceGcal = new();
@@ -35,6 +34,67 @@ public class CalendarViewModel : INotifyPropertyChanged
     public CalendarViewModel()
     {
         _ = StartupAsync();
+    }
+
+    private async Task StartupAsync()
+    {
+        var configCardDav = App.Current.Configuration.Carddav;
+        var configGcal = App.Current.Configuration.GoogleCalendar;
+        _selectedIds = configGcal.SelectedIds;
+        _urlCardDav = configCardDav.Url;
+
+        // Set up CardDAV client
+        var usernameCardDav = App.Current.Credentials.Carddav.Username;
+        var passwordCardDav = App.Current.Credentials.Carddav.Password;
+        _clientCardDav = new HttpClient();
+        var byteArray = Encoding.ASCII.GetBytes($"{usernameCardDav}:{passwordCardDav}");
+        _clientCardDav.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+
+        // Set up Google Calendar API service
+        string[] scopes = [CalendarService.Scope.CalendarReadonly];
+        const string applicationName = "Agenda Dashboard";
+        UserCredential credential;
+
+        // GoogleWebAuthorizationBroker needs JSON input TODO: do this cleanly?
+        var gcalCredsStream = new MemoryStream();
+        var szrOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        JsonSerializer.Serialize(gcalCredsStream, App.Current.Credentials.GoogleCalendar, szrOpts);
+        gcalCredsStream.Position = 0;
+        credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+            GoogleClientSecrets.FromStream(gcalCredsStream).Secrets,
+            scopes,
+            "user",
+            CancellationToken.None,
+            new FileDataStore("gcal_token", true));
+
+        _serviceGcal = new CalendarService(new BaseClientService.Initializer
+        {
+            HttpClientInitializer = credential,
+            ApplicationName = applicationName
+        });
+
+        // Do initial refresh - queue on Dispatcher
+        _ = App.Current.Dispatcher.InvokeAsync(RefreshGcal, DispatcherPriority.Background);
+        _ = App.Current.Dispatcher.InvokeAsync(RefreshCardDav, DispatcherPriority.Background);
+
+        // Set up a repeating timer to refresh the Google Calendar events model
+        var timerGCal = new DispatcherTimer { Interval = TimeSpan.FromSeconds(configGcal.RefreshInterval) };
+        timerGCal.Tick += (_, _) =>
+        {
+            ResetTargetDate(); // Reset target date to today before loading events
+            RefreshGcal();
+        };
+        timerGCal.Start();
+
+        // Set up a repeating timer to refresh CardDAV events
+        var timerCardDav = new DispatcherTimer { Interval = TimeSpan.FromSeconds(configCardDav.RefreshInterval) };
+        timerCardDav.Tick += (_, _) =>
+        {
+            ResetTargetDate(); // Reset target date to today before loading events
+            RefreshCardDav();
+        };
+        timerCardDav.Start();
     }
 
     internal void DecrementTargetDate()
@@ -52,87 +112,7 @@ public class CalendarViewModel : INotifyPropertyChanged
         _targetDate = DateTime.Now.Date;
     }
 
-    internal void Refresh()
-    {
-        RefreshGcal();
-        RefreshCardDav();
-    }
-
-    private void RefreshGcal()
-    {
-        _ = _notifMgr.ExecNotifyAsync(LoadGcalEventsAsync, "Loaded Google Calendar events.");
-    }
-
-    private void RefreshCardDav()
-    {
-        _ = _notifMgr.ExecNotifyAsync(LoadCardDavEventsAsync, "Loaded Google Calendar events.");
-    }
-
-    private async Task StartupAsync()
-    {
-        _notifMgr = App.Current.NotifMgr;
-
-        var configCardDav = App.Current.Config.Carddav;
-        var refreshIntervalCardDav = configCardDav.RefreshInterval; // TODO: error handling
-        _urlCardDav = configCardDav.Url;
-
-        // Set up CardDAV client
-        var usernameCardDav = App.Current.Creds.Carddav.Username;
-        var passwordCardDav = App.Current.Creds.Carddav.Password;
-        _clientCardDav = new HttpClient();
-        var byteArray = Encoding.ASCII.GetBytes($"{usernameCardDav}:{passwordCardDav}");
-        _clientCardDav.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-
-        var configGcal = App.Current.Config.GoogleCalendar;
-        var refreshIntervalGCal = configGcal.RefreshInterval;
-        _selectedIds = configGcal.SelectedIds;
-
-        // Set up Google Calendar API service
-        string[] scopes = [CalendarService.Scope.CalendarReadonly];
-        const string applicationName = "Agenda Dashboard";
-        UserCredential credential;
-
-        var stream = new MemoryStream();
-        JsonSerializer.Serialize(stream, App.Current.Creds.GoogleCalendar);
-        stream.Position = 0;
-        credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-            GoogleClientSecrets.FromStream(stream).Secrets,
-            scopes,
-            "user",
-            CancellationToken.None,
-            new FileDataStore("gcal_token", true));
-
-        _serviceGcal = new CalendarService(new BaseClientService.Initializer
-        {
-            HttpClientInitializer = credential,
-            ApplicationName = applicationName
-        });
-
-        // Set up a repeating timer to refresh the Google Calendar events model
-        var timerGCal = new DispatcherTimer { Interval = TimeSpan.FromSeconds(refreshIntervalGCal) };
-        timerGCal.Tick += (_, _) =>
-        {
-            ResetTargetDate(); // Reset target date to today before loading events
-            RefreshGcal();
-        };
-        timerGCal.Start();
-
-        // Set up a repeating timer to refresh CardDAV events
-        var timerCardDav = new DispatcherTimer { Interval = TimeSpan.FromSeconds(refreshIntervalCardDav) };
-        timerCardDav.Tick += (_, _) =>
-        {
-            ResetTargetDate(); // Reset target date to today before loading events
-            RefreshCardDav();
-        };
-        timerCardDav.Start();
-
-        // Do initial refresh once the app is idle - InvokeAsync not necessary here, already forked from caller
-        App.Current.Dispatcher.Invoke(Refresh, DispatcherPriority.ApplicationIdle);
-    }
-
-    // Must be called from the GUI disptacher!
-    private void UpdateDateLines()
+    private async Task UpdateDateLinesAsync()
     {
         // Create a new date lines list and insert the target date as the first line
         var dateLinesNew = new List<string> { $"{_targetDate:D}" };
@@ -140,8 +120,11 @@ public class CalendarViewModel : INotifyPropertyChanged
         dateLinesNew.AddRange(_allDayEventLines);
         dateLinesNew.AddRange(_cardDavEventLines);
 
-        DateLines = dateLinesNew;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DateLines)));
+        await App.Current.Dispatcher.InvokeAsync(() =>
+        {
+            DateLines = dateLinesNew;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DateLines)));
+        }, DispatcherPriority.Normal);
     }
 
     private async Task LoadGcalEventsAsync()
@@ -189,13 +172,15 @@ public class CalendarViewModel : INotifyPropertyChanged
             }
         }
 
-        // Replace model and notify property change on Dispatcher - InvokeAsync not necessary, quick operations
-        App.Current.Dispatcher.Invoke(() =>
+        // Replace model and notify property change on Dispatcher
+        await App.Current.Dispatcher.InvokeAsync(() =>
         {
             GcalEvents = gcalEventsNew;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GcalEvents)));
-            UpdateDateLines();
-        });
+        }, DispatcherPriority.Normal);
+
+        // Update DateLines - _allDayEventLines changed
+        await UpdateDateLinesAsync();
     }
 
     private async Task LoadCardDavEventsAsync()
@@ -239,29 +224,28 @@ public class CalendarViewModel : INotifyPropertyChanged
             if (bd.Month == _targetDate.Month && bd.Day == _targetDate.Day)
             {
                 _cardDavEventLines.Add(
-                    $"{vCard.FormattedName}'s {YearDiffToOrdinal(bd, _targetDate)} birthday: {bd.ToShortDateString()}");
+                    $"{vCard.FormattedName}'s {HelperMethods.YearDiffToOrdinal(bd, _targetDate)} birthday: {bd.ToShortDateString()}");
             }
         }
 
-        // Replace model and notify property change - InvokeAsync not necessary, quick operations
-        App.Current.Dispatcher.Invoke(UpdateDateLines);
+        // Update DateLines - _cardDavEventLines changed
+        await UpdateDateLinesAsync();
     }
 
-    private static string YearDiffToOrdinal(DateTime start, DateTime end)
+    private void RefreshGcal()
     {
-        var years = end.Year - start.Year;
-        if (end.Month < start.Month || (end.Month == start.Month && end.Day < start.Day)) years--;
+        _ = HelperMethods.ExecAndNotifyAsync(LoadGcalEventsAsync, "Loaded Google Calendar events.");
+    }
 
-        var rem100 = years % 100;
-        if (rem100 is >= 11 and <= 13) return $"{years}th";
+    private void RefreshCardDav()
+    {
+        _ = HelperMethods.ExecAndNotifyAsync(LoadCardDavEventsAsync, "Loaded CardDAV events.");
+    }
 
-        return (years % 10) switch
-        {
-            1 => $"{years}st",
-            2 => $"{years}nd",
-            3 => $"{years}rd",
-            _ => $"{years}th"
-        };
+    internal void Refresh()
+    {
+        RefreshCardDav();
+        RefreshGcal();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

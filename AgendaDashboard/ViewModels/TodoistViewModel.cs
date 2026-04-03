@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -12,30 +11,22 @@ public class TodoistViewModel : INotifyPropertyChanged
 {
     public List<TodoistTask> TodoistTasks { get; private set; } = [];
 
-    private NotifMgr _notifMgr;
     private HttpClient _client = new();
     private string _query = "";
 
     public TodoistViewModel()
     {
-        Startup();
+        _ = StartupAsync();
     }
 
-    internal void Refresh()
+    private async Task StartupAsync()
     {
-        _ = _notifMgr.ExecNotifyAsync(LoadTodoistTasksAsync, "Loaded Todoist tasks.");
-    }
-
-    private void Startup()
-    {
-        _notifMgr = App.Current.NotifMgr;
-
-        var config = App.Current.Config.Todoist;
+        var config = App.Current.Configuration.Todoist;
         var refreshInterval = config.RefreshInterval;
         _query = config.Query;
 
         // Set up client
-        var apiToken = App.Current.Creds.Todoist.ApiToken;
+        var apiToken = App.Current.Credentials.Todoist.ApiToken;
         _client = new HttpClient();
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiToken);
 
@@ -44,8 +35,8 @@ public class TodoistViewModel : INotifyPropertyChanged
         timer.Elapsed += (_, _) => { Refresh(); };
         timer.Start();
 
-        // Do initial refresh once the app is idle
-        App.Current.Dispatcher.InvokeAsync(Refresh, DispatcherPriority.ApplicationIdle);
+        // Do initial refresh - queue on Dispatcher
+        await App.Current.Dispatcher.InvokeAsync(Refresh, DispatcherPriority.Background);
     }
 
     private async Task LoadTodoistTasksAsync()
@@ -81,12 +72,17 @@ public class TodoistViewModel : INotifyPropertyChanged
             return x.DayOrder.CompareTo(y.DayOrder);
         });
 
-        // Replace model and notify property change on Dispatcher - InvokeAsync not necessary, quick operations
-        App.Current.Dispatcher.Invoke(() =>
+        // Replace model and notify property change on Dispatcher
+        await App.Current.Dispatcher.InvokeAsync(() =>
         {
             TodoistTasks = todoistTasksNew;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TodoistTasks)));
-        });
+        }, DispatcherPriority.Normal);
+    }
+
+    internal void Refresh()
+    {
+        _ = HelperMethods.ExecAndNotifyAsync(LoadTodoistTasksAsync, "Loaded Todoist tasks.");
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
