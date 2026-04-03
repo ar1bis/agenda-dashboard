@@ -74,27 +74,15 @@ public class CalendarViewModel : INotifyPropertyChanged
             ApplicationName = applicationName
         });
 
-        // Do initial refresh - queue on Dispatcher
-        _ = App.Current.Dispatcher.InvokeAsync(RefreshGcal, DispatcherPriority.Background);
-        _ = App.Current.Dispatcher.InvokeAsync(RefreshCardDav, DispatcherPriority.Background);
-
-        // Set up a repeating timer to refresh the Google Calendar events model
-        var timerGCal = new DispatcherTimer { Interval = TimeSpan.FromSeconds(configGcal.RefreshInterval) };
-        timerGCal.Tick += (_, _) =>
-        {
-            ResetTargetDate(); // Reset target date to today before loading events
-            RefreshGcal();
-        };
+        // Set up timers to periodically refresh Google Calendar and CardDAV event models
+        var timerGCal = new System.Timers.Timer(configGcal.RefreshInterval * 1000);
+        timerGCal.Elapsed += (_, _) => { ResetTargetDate(); RefreshGcal(); };
         timerGCal.Start();
-
-        // Set up a repeating timer to refresh CardDAV events
-        var timerCardDav = new DispatcherTimer { Interval = TimeSpan.FromSeconds(configCardDav.RefreshInterval) };
-        timerCardDav.Tick += (_, _) =>
-        {
-            ResetTargetDate(); // Reset target date to today before loading events
-            RefreshCardDav();
-        };
+        var timerCardDav = new System.Timers.Timer(configGcal.RefreshInterval * 1000);
+        timerCardDav.Elapsed += (_, _) => { ResetTargetDate(); RefreshCardDav(); };
         timerCardDav.Start();
+
+        Refresh();
     }
 
     internal void DecrementTargetDate()
@@ -117,6 +105,7 @@ public class CalendarViewModel : INotifyPropertyChanged
         // Create a new date lines list and insert the target date as the first line
         var dateLinesNew = new List<string> { $"{_targetDate:D}" };
 
+        // TODO add date lines for public holidays
         dateLinesNew.AddRange(_allDayEventLines);
         dateLinesNew.AddRange(_cardDavEventLines);
 
@@ -213,6 +202,7 @@ public class CalendarViewModel : INotifyPropertyChanged
         var tr = new StringReader(vCardStrsCombined);
         var vCards = SimpleDeserializer.Default.Deserialize(tr); // Parse vCard string
 
+        // TODO show birthdays in range +7d -5d
         _cardDavEventLines.Clear();
         foreach (var vCardComponent in vCards)
         {

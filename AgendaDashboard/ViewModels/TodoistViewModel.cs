@@ -22,7 +22,6 @@ public class TodoistViewModel : INotifyPropertyChanged
     private async Task StartupAsync()
     {
         var config = App.Current.Configuration.Todoist;
-        var refreshInterval = config.RefreshInterval;
         _query = config.Query;
 
         // Set up client
@@ -30,13 +29,12 @@ public class TodoistViewModel : INotifyPropertyChanged
         _client = new HttpClient();
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiToken);
 
-        // Set up a timer to refresh the tasks model
-        var timer = new System.Timers.Timer(refreshInterval * 1000);
+        // Set up timer to periodically refresh tasks model
+        var timer = new System.Timers.Timer(config.RefreshInterval * 1000);
         timer.Elapsed += (_, _) => { Refresh(); };
         timer.Start();
 
-        // Do initial refresh - queue on Dispatcher
-        await App.Current.Dispatcher.InvokeAsync(Refresh, DispatcherPriority.Background);
+        Refresh();
     }
 
     private async Task LoadTodoistTasksAsync()
