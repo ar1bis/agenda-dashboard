@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Threading;
 
 namespace AgendaDashboard;
 
@@ -11,9 +12,20 @@ namespace AgendaDashboard;
 public partial class MainWindow : Window
 {
     private bool _raised;
+    private readonly DispatcherTimer _notifTimer;
+    // (message, status)
+    private readonly Queue<(string message, string status)> _notifQueue;
+    private bool _statusBarEmpty;
 
     public MainWindow()
     {
+        // Set up notification queue
+        _notifQueue = [];
+        _statusBarEmpty = true;
+        _notifTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+        _notifTimer.Tick += (_, _) => ShowNextNotification();
+        _notifTimer.Start();
+
         InitializeComponent();
         Loaded += MainWindow_Loaded;
     }
@@ -23,7 +35,7 @@ public partial class MainWindow : Window
         base.OnSourceInitialized(e);
 
         // Set the initial window position from settings TODO: error handling
-        var config = App.Current.Config;
+        var config = App.Current.Configuration;
         Left = config.General.XPosition - 4; // Offset by 4px because of the title bar
         Top = config.General.YPosition - 4; // Same here
 
@@ -40,33 +52,13 @@ public partial class MainWindow : Window
         SetWindowLongPtr(hwnd, gwlpExstyle, exStyle);
     }
 
-    internal void ToggleRaise(object? sender, EventArgs e)
-    {
-        if (_raised)
-        {
-            Drop();
-            _raised = false;
-        }
-        else
-        {
-            Raise();
-            _raised = true;
-        }
-    }
-
-    internal void ShowNotification(string message, string? status)
-    {
-        StatusBarMessage.Text = message;
-        StatusBarStatusItem.Content = status;
-    }
-
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         // Initialize status bar
         var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0";
-        ShowNotification($"Agenda Dashboard v{version}", "Ready"); // Show version in status bar
+        QueueNotification($"Agenda Dashboard v{version}", "Ready");
 
-        // Drop the window to the bottom of the z-order
+        // Drop window to bottom of z-order
         Drop();
         _raised = false;
     }
@@ -87,6 +79,48 @@ public partial class MainWindow : Window
         const int hwndBottom = 1;
         const int swpNosize = 0x0001, swpNomove = 0x0002, swpNoactivate = 0x0010;
         SetWindowPos(hwnd, hwndBottom, 0, 0, 0, 0, swpNosize | swpNomove | swpNoactivate); // TODO: error handling
+    }
+
+    internal void ToggleRaise(object? sender, EventArgs e)
+    {
+        if (_raised)
+        {
+            Drop();
+            _raised = false;
+        }
+        else
+        {
+            Raise();
+            _raised = true;
+        }
+    }
+
+    private void ShowNextNotification()
+    {
+        if (_notifQueue.Count == 0)
+        {
+            // Queue a "ready" status message
+            _notifQueue.Enqueue(("", "Ready"));
+            _statusBarEmpty = true;
+        }
+
+        var (message, status) = _notifQueue.Dequeue();
+        StatusBarMessage.Text = message;
+        StatusBarStatusItem.Content = status;
+    }
+
+    internal void QueueNotification(string message, string status)
+    {
+        _notifQueue.Enqueue((message, status));
+
+        if (!_statusBarEmpty) return; // Nothing else to do if the status bar is not empty
+
+        // Immediately show message if the status bar is empty - queue on Dispatcher
+        Application.Current.Dispatcher.InvokeAsync(ShowNextNotification, DispatcherPriority.Normal);
+        _statusBarEmpty = false;
+        // Reset the timer
+        _notifTimer.Stop();
+        _notifTimer.Start();
     }
 
     [DllImport("user32.dll")]
