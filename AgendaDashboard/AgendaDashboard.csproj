@@ -23,7 +23,6 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.5.25277.114"/>
         <PackageReference Include="vCard.Net" Version="2.1.0"/>
         <PackageReference Include="SharpYaml" Version="3.7.0"/>
-        <PackageReference Include="System.Text.Json" Version="10.0.5"/>
     </ItemGroup>
 
     <ItemGroup>

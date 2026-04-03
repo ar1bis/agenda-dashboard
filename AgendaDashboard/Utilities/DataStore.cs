@@ -14,6 +14,7 @@ public static class DataStore
     public static Configuration LoadConfiguration(string path = "configuration.yaml")
     {
         if (!File.Exists(path)) throw new FileNotFoundException($"Configuration file not found: {path}");
+        // TODO match against schema
         return YamlSerializer.Deserialize<Configuration>(File.ReadAllText(path), _ysOptions) ?? throw new InvalidOperationException();
     }
 
@@ -25,8 +26,8 @@ public static class DataStore
 
     public static Credentials LoadCredentials(string path = "credentials.yaml")
     {
-        if (!File.Exists(path))
-            throw new FileNotFoundException($"Credentials file not found: {path}");
+        if (!File.Exists(path)) throw new FileNotFoundException($"Credentials file not found: {path}");
+        // TODO: match against schema
         return YamlSerializer.Deserialize<Credentials>(File.ReadAllText(path), _ysOptions) ?? throw new InvalidOperationException();
     }
 
@@ -36,6 +37,8 @@ public static class DataStore
         File.WriteAllText(path, yaml);
     }
 }
+
+// TODO: resolve non-nullable warnings
 
 public class Configuration
 {

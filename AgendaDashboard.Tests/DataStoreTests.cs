@@ -1,11 +1,11 @@
 using AgendaDashboard.Utilities;
 
-namespace Tests;
+namespace AgendaDashboard.Tests;
 
 public class DataStoreTests : IDisposable
 {
-    private readonly string tempConfigPath = Path.GetTempFileName();
-    private readonly string tempCredsPath = Path.GetTempFileName();
+    private readonly string _tempConfigPath = Path.GetTempFileName();
+    private readonly string _tempCredsPath = Path.GetTempFileName();
 
     [Fact]
     public void LoadConfiguration_FileNotFound_Throws()
@@ -45,8 +45,8 @@ public class DataStoreTests : IDisposable
                 { RefreshInterval = 15, SelectedIds = new List<string> { "id1", "id2" } },
             Carddav = new CarddavConfig { RefreshInterval = 30, Url = "https://example.com" }
         };
-        DataStore.SaveConfiguration(config, tempConfigPath);
-        var loaded = DataStore.LoadConfiguration(tempConfigPath);
+        DataStore.SaveConfiguration(config, _tempConfigPath);
+        var loaded = DataStore.LoadConfiguration(_tempConfigPath);
         Assert.Equal(config.General.XPosition, loaded.General.XPosition);
         Assert.Equal(config.General.YPosition, loaded.General.YPosition);
         Assert.Equal(config.Todoist.RefreshInterval, loaded.Todoist.RefreshInterval);
@@ -86,8 +86,8 @@ public class DataStoreTests : IDisposable
             },
             Carddav = new CarddavCredentials { Username = "user", Password = "pass" }
         };
-        DataStore.SaveCredentials(creds, tempCredsPath);
-        var loaded = DataStore.LoadCredentials(tempCredsPath);
+        DataStore.SaveCredentials(creds, _tempCredsPath);
+        var loaded = DataStore.LoadCredentials(_tempCredsPath);
         Assert.Equal(creds.Todoist.ApiToken, loaded.Todoist.ApiToken);
         Assert.Equal(creds.GoogleCalendar.Installed.ClientId, loaded.GoogleCalendar.Installed.ClientId);
         Assert.Equal(creds.GoogleCalendar.Installed.ProjectId, loaded.GoogleCalendar.Installed.ProjectId);
@@ -103,7 +103,7 @@ public class DataStoreTests : IDisposable
 
     public void Dispose()
     {
-        if (File.Exists(tempConfigPath)) File.Delete(tempConfigPath);
-        if (File.Exists(tempCredsPath)) File.Delete(tempCredsPath);
+        if (File.Exists(_tempConfigPath)) File.Delete(_tempConfigPath);
+        if (File.Exists(_tempCredsPath)) File.Delete(_tempCredsPath);
     }
 }
