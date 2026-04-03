@@ -6,14 +6,16 @@ namespace AgendaDashboard.Views;
 
 public partial class TodoistView : UserControl
 {
+    private readonly TodoistViewModel _viewModel;
+
     public TodoistView()
     {
         InitializeComponent();
-        DataContext = new TodoistViewModel();
+        DataContext = _viewModel = new TodoistViewModel();
     }
 
     internal void RefreshButton_Click(object sender, RoutedEventArgs? e)
     {
-        (DataContext as TodoistViewModel)!.Refresh();
+        _viewModel.Refresh();
     }
 }

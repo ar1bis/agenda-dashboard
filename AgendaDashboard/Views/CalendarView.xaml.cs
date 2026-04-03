@@ -8,24 +8,21 @@ namespace AgendaDashboard.Views;
 
 public partial class CalendarView : UserControl
 {
+    // Constants - used in CalendarPanel, WPF bindings
     public const double LeftMargin = 4;
     public const double RightMargin = 10;
     public const double DateLabelOffset = 40;
     public const double EventCardMinHeight = 50;
     public const double EventCardsRightOffset = 46; // Offset matches end of date line
-    public static readonly Thickness DateLinesMargin = new(DateLabelOffset, 0, 27, 0);
-    // Right margin matches end of date line
+    public static readonly Thickness DateLinesMargin = new(DateLabelOffset, 0, 27, 0); // Right margin matches end of date line
+
+    private readonly CalendarViewModel _viewModel;
 
     public CalendarView()
     {
         InitializeComponent();
-        DataContext = new CalendarViewModel();
+        DataContext = _viewModel = new CalendarViewModel();
         Loaded += CalendarView_Loaded; // Subscribe to the Loaded event to load events when the window is ready
-    }
-
-    internal void RefreshButton_Click(object sender, RoutedEventArgs? e)
-    {
-        (DataContext as CalendarViewModel)!.Refresh();
     }
 
     private void CalendarView_Loaded(object sender, RoutedEventArgs e)
@@ -44,25 +41,27 @@ public partial class CalendarView : UserControl
         timer.Start();
     }
 
+    internal void RefreshButton_Click(object sender, RoutedEventArgs? e)
+    {
+        _viewModel.Refresh();
+    }
+
     private void PreviousDayButton_Click(object sender, RoutedEventArgs e)
     {
-        var viewModel = (DataContext as CalendarViewModel)!;
-        viewModel.DecrementTargetDate();
-        viewModel.Refresh();
+        _viewModel.DecrementTargetDate();
+        _viewModel.Refresh();
     }
 
     private void CurrentDayButton_Click(object sender, RoutedEventArgs e)
     {
-        var viewModel = (DataContext as CalendarViewModel)!;
-        viewModel.ResetTargetDate();
-        viewModel.Refresh();
+        _viewModel.ResetTargetDate();
+        _viewModel.Refresh();
     }
 
     private void NextDayButton_Click(object sender, RoutedEventArgs e)
     {
-        var viewModel = (DataContext as CalendarViewModel)!;
-        viewModel.IncrementTargetDate();
-        viewModel.Refresh();
+        _viewModel.IncrementTargetDate();
+        _viewModel.Refresh();
     }
 
     private void GcalScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
