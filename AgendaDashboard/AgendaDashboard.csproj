@@ -1,70 +1,75 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <Version>0.5.0</Version>
-        <OutputType>WinExe</OutputType>
-        <TargetFramework>net10.0-windows</TargetFramework>
-        <Platforms>x64</Platforms>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <UseWPF>true</UseWPF>
-        <ApplicationIcon>Assets\AgendaDashboard.ico</ApplicationIcon>
-        <Configurations>Release;Debug</Configurations>
-    </PropertyGroup>
+  <PropertyGroup>
+    <Version>0.5.0</Version>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Platforms>x64</Platforms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\AgendaDashboard.ico</ApplicationIcon>
+    <Configurations>Release;Debug</Configurations>
+  </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-        <DebugType>none</DebugType>
-    </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="CardDav" Version="1.0.0"/>
-        <PackageReference Include="Google.Apis.Auth" Version="1.69.0"/>
-        <PackageReference Include="Google.Apis.Calendar.v3" Version="1.69.0.3746"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.5.25277.114"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.5.25277.114"/>
-        <PackageReference Include="vCard.Net" Version="2.1.0"/>
-        <PackageReference Include="SharpYaml" Version="3.7.0"/>
-    </ItemGroup>
+  <Target AfterTargets="Publish" Name="ZipPublishOutput">
+    <ZipDirectory DestinationFile="$(PublishDir)..\$(AssemblyName)-$(TargetFramework)-$(RuntimeIdentifier).zip" Overwrite="true" SourceDirectory="$(PublishDir)"></ZipDirectory>
+    <Message Importance="High" Text="Successfully created publish zip package at: $(PublishDir)..\$(AssemblyName)-$(TargetFramework)-$(RuntimeIdentifier).zip"></Message>
+  </Target>
 
-    <ItemGroup>
-        <Content Include="credentials.yaml">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Include="configuration.yaml">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CardDav" Version="1.0.0"></PackageReference>
+    <PackageReference Include="Google.Apis.Auth" Version="1.69.0"></PackageReference>
+    <PackageReference Include="Google.Apis.Calendar.v3" Version="1.69.0.3746"></PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.5.25277.114"></PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.5.25277.114"></PackageReference>
+    <PackageReference Include="vCard.Net" Version="2.1.0"></PackageReference>
+    <PackageReference Include="SharpYaml" Version="3.7.0"></PackageReference>
+  </ItemGroup>
 
-    <ItemGroup>
-        <Page Update="Views\CalendarView.xaml">
-            <Generator>MSBuild:Compile</Generator>
-            <XamlRuntime>Wpf</XamlRuntime>
-            <SubType>Designer</SubType>
-        </Page>
-        <Page Update="Views\TodoistView.xaml">
-            <Generator>MSBuild:Compile</Generator>
-            <XamlRuntime>Wpf</XamlRuntime>
-            <SubType>Designer</SubType>
-        </Page>
-        <Page Update="Views\TodoistForm.xaml">
-            <Generator>MSBuild:Compile</Generator>
-            <XamlRuntime>Wpf</XamlRuntime>
-            <SubType>Designer</SubType>
-        </Page>
-        <Page Update="Views\GcalForm.xaml">
-            <Generator>MSBuild:Compile</Generator>
-            <XamlRuntime>Wpf</XamlRuntime>
-            <SubType>Designer</SubType>
-        </Page>
-        <Page Update="Controls\TitleBar.xaml">
-            <Generator>MSBuild:Compile</Generator>
-            <XamlRuntime>Wpf</XamlRuntime>
-            <SubType>Designer</SubType>
-        </Page>
-    </ItemGroup>
+  <ItemGroup>
+    <Content Include="credentials.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="configuration.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Assets\"/>
-    </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\CalendarView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>Wpf</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\TodoistView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>Wpf</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\TodoistForm.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>Wpf</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\GcalForm.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>Wpf</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\TitleBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>Wpf</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Assets\"></Folder>
+  </ItemGroup>
 
 </Project>
